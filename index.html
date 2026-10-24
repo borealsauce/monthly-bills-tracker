@@ -10,7 +10,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:12px 14px
 th{color:#8b93a3;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #262a33;cursor:pointer}
 tbody tr:nth-child(even){background:#14171d}tbody tr:hover{background:#1d2230}td.n{text-align:right;font-variant-numeric:tabular-nums}
 td.m{color:#4ade80;font-weight:600}tfoot td{font-weight:700;font-size:16px;border-top:2px solid #22c55e;color:#4ade80}
-.pill{background:#232838;border-radius:999px;padding:3px 10px;font-size:12px;color:#c5cbe0}th{position:relative}.rz{position:absolute;right:0;top:0;bottom:0;width:8px;cursor:col-resize;z-index:2}.rz:after{content:'';position:absolute;right:3px;top:25%;bottom:25%;width:2px;border-radius:1px;background:#3a4152}.rz:hover:after,.rz.on:after{background:#22c55e}table.fx{table-layout:fixed;width:max-content}table.fx td,table.fx th{overflow:hidden;text-overflow:ellipsis}.pill.fi{background:#1e3a5f;color:#93c5fd}.pill.va{background:#4a3712;color:#fcd34d}</style></head><body><div class="w">
+.pill{background:#232838;border-radius:999px;padding:3px 10px;font-size:12px;color:#c5cbe0}th{position:relative}.rz{position:absolute;right:0;top:0;bottom:0;width:8px;cursor:col-resize;z-index:2}.rz:after{content:'';position:absolute;right:3px;top:25%;bottom:25%;width:2px;border-radius:1px;background:#3a4152}.rz:hover:after,.rz.on:after{background:#22c55e}table.fx{table-layout:fixed}table.fx td,table.fx th{overflow:hidden;text-overflow:ellipsis}.pill.fi{background:#1e3a5f;color:#93c5fd}.pill.va{background:#4a3712;color:#fcd34d}</style></head><body><div class="w">
 <h1>Monthly Bills Tracker</h1><div class="sub">Typical recurring monthly bills · updated <span id="gen"></span></div>
 <div class="cards"><div class="card hero"><div class="l">Total / month</div><div class="v" id="tot">$0</div><div class="s">all recurring bills</div></div>
 <div class="card"><div class="l">Total / year</div><div class="v" id="yr">$0</div><div class="s">monthly × 12</div></div>
@@ -27,12 +27,12 @@ up(tot,d.total,v=>$(v));up(yr,d.total*12,v=>$(v,0));up(fx,d.fixed,v=>$(v,0));up(
 const c={};d.rows.forEach(r=>{const k=(r[2]||'Other').split(/ [–-] /)[0];c[k]=(c[k]||0)+r[3]});const tc=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];topc.textContent=tc[0];topv.textContent=$(tc[1])+' / month';
 t.innerHTML='<thead><tr>'+d.h.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+d.rows.map(r=>'<tr>'+r.map((c,i)=>i==3?`<td class="n m" data-v="${c}">${$(c)}</td>`:i==6?`<td class="n">${c}</td>`:(i==2||i==1)&&c?`<td><span class="pill${c=='Variable'?' va':c=='Fixed'?' fi':''}">${esc(c)}</span></td>`:`<td>${esc(c)}</td>`).join('')+'</tr>').join('')+`</tbody><tfoot><tr><td>TOTAL</td><td></td><td></td><td class="n" data-v="${d.total}">${$(d.total)}</td><td colspan="5"></td></tr></tfoot>`;rz()});
 
-function rz(){const K='mbt_colw2',W=JSON.parse(localStorage[K]||'{}'),ths=[...t.querySelectorAll('thead th')];
-ths.forEach((th,i)=>{if(!W[i])W[i]=th.getBoundingClientRect().width});ths.forEach((th,i)=>th.style.width=W[i]+'px');t.classList.add('fx');
+function rz(){const K='mbt_colw2',W=JSON.parse(localStorage[K]||'{}'),ths=[...t.querySelectorAll('thead th')],tw=()=>t.style.width=ths.reduce((a,_,j)=>a+W[j],0)+'px';
+ths.forEach((th,i)=>{if(!W[i])W[i]=th.getBoundingClientRect().width});ths.forEach((th,i)=>th.style.width=W[i]+'px');tw();t.classList.add('fx');
 ths.forEach((th,i)=>{const h=document.createElement('span');h.className='rz';h.title='Drag to resize';th.appendChild(h);
 h.addEventListener('click',e=>{e.stopPropagation();e.preventDefault()},true);
 h.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();h.setPointerCapture(e.pointerId);h.classList.add('on');const x0=e.clientX,w0=th.getBoundingClientRect().width;
-const mv=ev=>{W[i]=Math.max(50,w0+ev.clientX-x0);th.style.width=W[i]+'px'};
+const mv=ev=>{W[i]=Math.max(50,w0+ev.clientX-x0);th.style.width=W[i]+'px';tw()};
 const upf=()=>{h.classList.remove('on');h.removeEventListener('pointermove',mv);localStorage[K]=JSON.stringify(W);setTimeout(()=>{},0)};
 h.addEventListener('pointermove',mv);h.addEventListener('pointerup',upf,{once:true})})})}
 </script><!--SORTABLE-START--><script>
