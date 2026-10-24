@@ -1,24 +1,30 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Monthly Bills Tracker</title><style>body{margin:0;background:#0f1115;color:#e6e8ee;font-family:-apple-system,Segoe UI,Roboto,sans-serif}
-#gate{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:12px}
-input,button{font-size:18px;padding:12px 16px;border-radius:10px;border:1px solid #333;background:#1a1d24;color:#fff}button{background:#3b82f6;border:0;cursor:pointer}
-#err{color:#f87171;min-height:1em}#app{display:none;max-width:1100px;margin:auto;padding:24px 16px}h1{margin:0 0 8px}h2{color:#9aa3b2;font-size:15px;text-transform:uppercase;letter-spacing:1px;margin:28px 0 12px}
-.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}a.c{display:block;padding:22px;border-radius:14px;background:#171a21;border:1px solid #262a33;color:inherit;text-decoration:none;transition:.15s}
-a.c:hover{border-color:#3b82f6;transform:translateY(-2px)}a.c b{font-size:19px;display:block;margin-bottom:6px}a.c span{color:#9aa3b2;font-size:14px}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:15px}th,td{padding:10px;border-bottom:1px solid #262a33;text-align:left}th{color:#9aa3b2;cursor:pointer;position:sticky;top:0;background:#0f1115}td.n{text-align:right;font-variant-numeric:tabular-nums}tfoot td{font-weight:700;font-size:17px}.big{font-size:40px;font-weight:700}.sub{color:#9aa3b2}.wrap{overflow-x:auto}</style></head><body>
-<div id="gate"><h1>Monthly Bills Tracker</h1><input id="pw" type="password" inputmode="numeric" placeholder="Password" autofocus><button onclick="go()">Unlock</button><div id="err"></div></div>
-<div id="app"><h1>Monthly Bills Tracker</h1><div class="sub">Typical monthly recurring bills · updated <span id="gen"></span></div><div style="margin-top:16px"><span class="sub">Total / month</span><div class="big" id="tot"></div><span class="sub" id="yr"></span></div><div class="wrap"><table id="t"></table></div></div>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Monthly Bills Tracker</title>
+<style>body{margin:0;background:#0f1115;color:#e6e8ee;font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+.w{max-width:1150px;margin:auto;padding:28px 16px}h1{margin:0;font-size:28px}.sub{color:#8b93a3;font-size:14px;margin-top:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:24px 0}
+.card{background:#171a21;border:1px solid #262a33;border-radius:16px;padding:20px}.card .l{color:#8b93a3;font-size:13px;text-transform:uppercase;letter-spacing:1px}
+.card .v{font-size:30px;font-weight:700;margin-top:8px;font-variant-numeric:tabular-nums}.card .s{color:#8b93a3;font-size:13px;margin-top:4px}
+.card.hero{background:linear-gradient(135deg,#0f3d2e,#14532d);border-color:#22c55e}.card.hero .v{color:#4ade80;font-size:44px}
+.tw{background:#171a21;border:1px solid #262a33;border-radius:16px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:12px 14px;text-align:left;white-space:nowrap}
+th{color:#8b93a3;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #262a33;cursor:pointer}
+tbody tr:nth-child(even){background:#14171d}tbody tr:hover{background:#1d2230}td.n{text-align:right;font-variant-numeric:tabular-nums}
+td.m{color:#4ade80;font-weight:600}tfoot td{font-weight:700;font-size:16px;border-top:2px solid #22c55e;color:#4ade80}
+.pill{background:#232838;border-radius:999px;padding:3px 10px;font-size:12px;color:#c5cbe0}</style></head><body><div class="w">
+<h1>Monthly Bills Tracker</h1><div class="sub">Typical recurring monthly bills · updated <span id="gen"></span></div>
+<div class="cards"><div class="card hero"><div class="l">Total / month</div><div class="v" id="tot">$0</div><div class="s">all recurring bills</div></div>
+<div class="card"><div class="l">Total / year</div><div class="v" id="yr">$0</div><div class="s">monthly × 12</div></div>
+<div class="card"><div class="l">Bills</div><div class="v" id="cnt">0</div><div class="s">recurring lines</div></div>
+<div class="card"><div class="l">Largest category</div><div class="v" id="topc" style="font-size:22px"></div><div class="s" id="topv"></div></div></div>
+<div class="tw"><table id="t"></table></div></div>
 <script>
-const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-async function go(){try{const j=await (await fetch('data.enc.json',{cache:'no-store'})).json();const pw=document.getElementById('pw').value;
-const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
-const k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b(j.salt),iterations:j.iter,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
-const d=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b(j.iv)},k,b(j.ct))));
-sessionStorage.billpw=pw;render(d)}catch(e){document.getElementById('err').textContent='Wrong password'}}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const $=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-function render(d){gate.style.display='none';app.style.display='block';gen.textContent=d.gen;tot.textContent=$(d.total);yr.textContent=$(d.total*12)+' / year';
-t.innerHTML='<thead><tr>'+d.h.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+d.rows.map(r=>'<tr>'+r.map((c,i)=>i==1?`<td class="n" data-v="${c}">${$(c)}</td>`:i==4?`<td class="n">${c}</td>`:`<td>${esc(c)}</td>`).join('')+'</tr>').join('')+`</tbody><tfoot><tr><td>TOTAL</td><td class="n" data-v="${d.total}">${$(d.total)}</td><td colspan="6"></td></tr></tfoot>`}
-pw.addEventListener('keydown',e=>e.key==='Enter'&&go());
-if(sessionStorage.billpw){pw.value=sessionStorage.billpw;go()}
+const $=(v,d=2)=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+function up(el,to,f,ms=1400){const t0=performance.now();(function s(t){const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=f(to*e);if(p<1)requestAnimationFrame(s)})(t0)}
+fetch('data.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{gen.textContent=d.gen;
+up(tot,d.total,v=>$(v));up(yr,d.total*12,v=>$(v,0));up(cnt,d.rows.length,v=>Math.round(v));
+const c={};d.rows.forEach(r=>{const k=(r[6]||'Other').split(/ [–-] /)[0];c[k]=(c[k]||0)+r[1]});const tc=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];topc.textContent=tc[0];topv.textContent=$(tc[1])+' / month';
+t.innerHTML='<thead><tr>'+d.h.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+d.rows.map(r=>'<tr>'+r.map((c,i)=>i==1?`<td class="n m" data-v="${c}">${$(c)}</td>`:i==4?`<td class="n">${c}</td>`:i==6&&c?`<td><span class="pill">${esc(c)}</span></td>`:`<td>${esc(c)}</td>`).join('')+'</tr>').join('')+`</tbody><tfoot><tr><td>TOTAL</td><td class="n" data-v="${d.total}">${$(d.total)}</td><td colspan="6"></td></tr></tfoot>`});
 </script><!--SORTABLE-START--><script>
 /* Shared sortable tables (Grok Bot trackers). Click any header: asc/desc toggle with ▲/▼.
    Works on dynamically rendered tables via event delegation. Totals (tfoot, .total/.ft/.tot rows,
